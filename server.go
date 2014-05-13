@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/binding"
@@ -13,8 +12,8 @@ import (
 
 var client *redis.Client
 
-func init() {
-	client = redis.NewTCPClient(&redis.Options{
+func loadRedis() *redis.Client {
+	return redis.NewTCPClient(&redis.Options{
 		Addr: ":6379",
 	})
 }
@@ -31,9 +30,10 @@ type nameFormRender struct {
 
 func main() {
 	m := martini.Classic()
+	m.Map(loadRedis())
 	m.Use(render.Renderer(render.Options{}))
 
-	m.Get("/", func(ren render.Render) {
+	m.Get("/", func(ren render.Render, client *redis.Client) {
 		_, err := client.Incr("count").Result()
 		if err != nil {
 			ren.HTML(200, "index", &nameFormRender{Error: err.Error()})
@@ -55,7 +55,7 @@ func main() {
 		return
 	})
 
-	m.Post("/name", binding.Form(nameForm{}), func(form nameForm, err binding.Errors, ren render.Render, r *http.Request) {
+	m.Post("/name", binding.Form(nameForm{}), func(form nameForm, err binding.Errors, ren render.Render, client *redis.Client) {
 		set := client.Set("name", form.Name)
 		fmt.Printf("%#v\n", set)
 		fmt.Printf("%#v\n", set.Err())
@@ -63,7 +63,7 @@ func main() {
 		ren.Redirect("/")
 	})
 
-	m.Post("/clear", func(ren render.Render) {
+	m.Post("/clear", func(ren render.Render, client *redis.Client) {
 		_, err := client.Del("count").Result()
 		if err != nil {
 			ren.HTML(200, "index", &nameFormRender{Error: err.Error()})
