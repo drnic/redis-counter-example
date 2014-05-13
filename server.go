@@ -1,7 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
+	"strconv"
 
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/binding"
@@ -12,15 +15,29 @@ import (
 
 type redisConfig struct {
 	Host     string `json:"host"`
-	Port     string `json:"port"`
+	Port     int    `json:"port"`
 	Database string `json:"database"`
 	Password string `json:"password"`
 }
 
+func panicIfErr(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
 func loadRedis() *redis.Client {
-	config := redisConfig{Host: "localhost", Port: "6379"}
+	configFile, err := os.Open("config.json")
+	defer configFile.Close()
+	panicIfErr(err)
+
+	config := redisConfig{}
+	jsonParser := json.NewDecoder(configFile)
+	err = jsonParser.Decode(&config)
+	panicIfErr(err)
+
 	return redis.NewTCPClient(&redis.Options{
-		Addr: config.Host + ":" + config.Port,
+		Addr: config.Host + ":" + strconv.Itoa(config.Port),
 	})
 }
 
