@@ -1,0 +1,23 @@
+<html>
+  <head>
+    <title>Example Redis app</title>
+  </head>
+  <body>
+    <h1>Example Redis app</h1>
+    <p>
+      {{ if .Error }}{{ .Error }}{{ else }}
+      Last person to say hello was {{ .Name }}.
+      {{ end }}
+    </p>
+    <p>
+      Want to say hello?
+      <form method="post" action="/name">
+        <input type="text" name="name">
+        <input type="submit" value="Hello!">
+      </form>
+    </p>
+    <p>
+      You are visitor {{ .Count }}.
+    </p>
+  </body>
+</html>
