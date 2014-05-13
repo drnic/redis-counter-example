@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"strconv"
 
@@ -79,10 +78,7 @@ func main() {
 	})
 
 	m.Post("/name", binding.Form(nameForm{}), func(form nameForm, err binding.Errors, ren render.Render, client *redis.Client) {
-		set := client.Set("name", form.Name)
-		fmt.Printf("%#v\n", set)
-		fmt.Printf("%#v\n", set.Err())
-
+		_ = client.Set("name", form.Name)
 		ren.Redirect("/")
 	})
 
