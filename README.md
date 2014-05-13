@@ -1,4 +1,4 @@
 Example redis app
 =================
 
-![example](http://cl.ly/image/0W1l3q02390U/example-redis-app.gif)
+![example](http://cl.ly/image/35140k2A2K1Z/example-redis-app.gif)
