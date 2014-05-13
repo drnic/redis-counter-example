@@ -63,5 +63,21 @@ func main() {
 		ren.Redirect("/")
 	})
 
+	m.Post("/clear", func(ren render.Render) {
+		_, err := client.Del("count").Result()
+		if err != nil {
+			ren.HTML(200, "index", &nameFormRender{Error: err.Error()})
+			return
+		}
+
+		_, err = client.Del("name").Result()
+		if err != nil {
+			ren.HTML(200, "index", &nameFormRender{Error: err.Error()})
+			return
+		}
+
+		ren.Redirect("/")
+	})
+
 	m.Run()
 }

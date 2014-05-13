@@ -19,5 +19,12 @@
     <p>
       You are visitor {{ .Count }}.
     </p>
+    <hr />
+    <p>
+      Reset database?
+      <form method="post" action="/clear">
+        <input type="submit" value="Reset">
+      </form>
+    </p>
   </body>
 </html>
