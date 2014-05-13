@@ -10,11 +10,17 @@ import (
 	redis "gopkg.in/redis.v1"
 )
 
-var client *redis.Client
+type redisConfig struct {
+	Host     string `json:"host"`
+	Port     string `json:"port"`
+	Database string `json:"database"`
+	Password string `json:"password"`
+}
 
 func loadRedis() *redis.Client {
+	config := redisConfig{Host: "localhost", Port: "6379"}
 	return redis.NewTCPClient(&redis.Options{
-		Addr: ":6379",
+		Addr: config.Host + ":" + config.Port,
 	})
 }
 
