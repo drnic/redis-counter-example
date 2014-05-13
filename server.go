@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
+	"fmt"
 	"os"
 	"strconv"
 
@@ -26,7 +28,11 @@ func panicIfErr(err error) {
 }
 
 func loadRedis() *redis.Client {
-	configFile, err := os.Open("config.json")
+	configPath := flag.String("config", "config.json", "config file for redis connection")
+	flag.Parse()
+
+	fmt.Println("Loading config from", *configPath)
+	configFile, err := os.Open(*configPath)
 	defer configFile.Close()
 	panicIfErr(err)
 
