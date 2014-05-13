@@ -10,8 +10,10 @@ Installation
 go get -u github.com/drnic/redis-counter-example
 ```
 
-Configuration
--------------
+Usage
+-----
+
+### With configuration file
 
 Create a configuration file with connection details to a Redis server:
 
@@ -22,20 +24,32 @@ Create a configuration file with connection details to a Redis server:
 }
 ```
 
-Usage
------
-
 Run the server with `-config PATH` to specify the Redis connection details:
 
 ```
 redis-counter-example -config path/to/redis.json
 ```
 
+### With environment variables
+
+Set the environment variables:
+
+```
+export HOST=localhost
+export PORT=6379
+```
+
+Run the server and Redis connection details loaded from `$HOST` and `$PORT`:
+
+```
+redis-counter-example
+```
+
 Development
 -----------
 
-Within the project is a default `config.json` which assumes a local Redis server (contains the example configuration above).
+Within the project there is `config.json` which assumes a local Redis server (contains the example configuration above).
 
 ```
-go run server.go
+go run server.go -config config.json
 ```

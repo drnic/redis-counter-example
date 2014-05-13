@@ -16,7 +16,7 @@ import (
 
 type redisConfig struct {
 	Host     string `json:"host"`
-	Port     int    `json:"port"`
+	Port     int64  `json:"port"`
 	Database string `json:"database"`
 	Password string `json:"password"`
 }
@@ -28,21 +28,36 @@ func panicIfErr(err error) {
 }
 
 func loadRedis() *redis.Client {
-	configPath := flag.String("config", "config.json", "config file for redis connection")
+	configPath := flag.String("config", "", "config file for redis connection")
 	flag.Parse()
 
-	fmt.Println("Loading config from", *configPath)
-	configFile, err := os.Open(*configPath)
-	defer configFile.Close()
-	panicIfErr(err)
+	var err error
 
-	config := redisConfig{}
-	jsonParser := json.NewDecoder(configFile)
-	err = jsonParser.Decode(&config)
-	panicIfErr(err)
+	config := redisConfig{
+		Host:     os.Getenv("HOST"),
+		Password: os.Getenv("PASSWORD"),
+	}
+
+	if port := os.Getenv("PORT"); port != "" {
+		config.Port, err = strconv.ParseInt(port, 0, 64)
+		panicIfErr(err)
+	}
+
+	if *configPath != "" {
+		fmt.Println("Loading config from", *configPath)
+		configFile, err := os.Open(*configPath)
+		defer configFile.Close()
+		panicIfErr(err)
+
+		jsonParser := json.NewDecoder(configFile)
+		err = jsonParser.Decode(&config)
+		panicIfErr(err)
+	}
+	fmt.Printf("%#v\n", config)
 
 	return redis.NewTCPClient(&redis.Options{
-		Addr: config.Host + ":" + strconv.Itoa(config.Port),
+		Addr:     config.Host + ":" + strconv.FormatInt(config.Port, 10),
+		Password: config.Password,
 	})
 }
 
