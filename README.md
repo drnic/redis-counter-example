@@ -35,8 +35,9 @@ redis-counter-example -config path/to/redis.json
 Set the environment variables:
 
 ```
-export HOST=localhost
-export PORT=6379
+export REDIS_HOST=localhost
+export REDIS_PORT=6379
+export REDIS_PASSWORD=password
 ```
 
 Run the server and Redis connection details loaded from `$HOST` and `$PORT`:

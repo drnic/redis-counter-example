@@ -34,11 +34,11 @@ func loadRedis() *redis.Client {
 	var err error
 
 	config := redisConfig{
-		Host:     os.Getenv("HOST"),
-		Password: os.Getenv("PASSWORD"),
+		Host:     os.Getenv("REDIS_HOST"),
+		Password: os.Getenv("REDIS_PASSWORD"),
 	}
 
-	if port := os.Getenv("PORT"); port != "" {
+	if port := os.Getenv("REDIS_PORT"); port != "" {
 		config.Port, err = strconv.ParseInt(port, 0, 64)
 		panicIfErr(err)
 	}
