@@ -17,7 +17,7 @@ import (
 type redisConfig struct {
 	Host     string `json:"host"`
 	Port     int64  `json:"port"`
-	Database string `json:"database"`
+	DB       int64  `json:"database"`
 	Password string `json:"password"`
 }
 
@@ -27,7 +27,11 @@ func panicIfErr(err error) {
 	}
 }
 
-func loadRedis() *redis.Client {
+func loadRedis(options *redis.Options) *redis.Client {
+	return redis.NewTCPClient(options)
+}
+
+func loadRedisOptions() *redis.Options {
 	configPath := flag.String("config", "", "config file for redis connection")
 	flag.Parse()
 
@@ -40,6 +44,10 @@ func loadRedis() *redis.Client {
 
 	if port := os.Getenv("REDIS_PORT"); port != "" {
 		config.Port, err = strconv.ParseInt(port, 0, 64)
+		panicIfErr(err)
+	}
+	if port := os.Getenv("REDIS_DATABASE"); port != "" {
+		config.DB, err = strconv.ParseInt(port, 0, 64)
 		panicIfErr(err)
 	}
 
@@ -55,10 +63,11 @@ func loadRedis() *redis.Client {
 	}
 	fmt.Printf("%#v\n", config)
 
-	return redis.NewTCPClient(&redis.Options{
+	return &redis.Options{
 		Addr:     config.Host + ":" + strconv.FormatInt(config.Port, 10),
 		Password: config.Password,
-	})
+		DB:       config.DB,
+	}
 }
 
 type nameForm struct {
@@ -69,32 +78,34 @@ type nameFormRender struct {
 	Count string
 	Name  string
 	Error string
+	Redis *redis.Options
 }
 
 func main() {
+	redisOptions := loadRedisOptions()
 	m := martini.Classic()
-	m.Map(loadRedis())
+	m.Map(loadRedis(redisOptions))
 	m.Use(render.Renderer(render.Options{}))
 
 	m.Get("/", func(ren render.Render, client *redis.Client) {
 		_, err := client.Incr("count").Result()
 		if err != nil {
-			ren.HTML(200, "index", &nameFormRender{Error: err.Error()})
+			ren.HTML(200, "index", &nameFormRender{Error: err.Error(), Redis: redisOptions})
 			return
 		}
 
 		count, err := client.Get("count").Result()
 		if err != nil {
-			ren.HTML(200, "index", &nameFormRender{Error: err.Error()})
+			ren.HTML(200, "index", &nameFormRender{Error: err.Error(), Redis: redisOptions})
 			return
 		}
 
 		name, err := client.Get("name").Result()
 		if err != nil {
-			ren.HTML(200, "index", &nameFormRender{Error: "No one has said hello yet", Count: count})
+			ren.HTML(200, "index", &nameFormRender{Error: "No one has said hello yet", Count: count, Redis: redisOptions})
 			return
 		}
-		ren.HTML(200, "index", &nameFormRender{Name: name, Count: count})
+		ren.HTML(200, "index", &nameFormRender{Name: name, Count: count, Redis: redisOptions})
 		return
 	})
 
